@@ -27,8 +27,8 @@
               <label for="server">服务器</label>
             </div>
             <div class="rightpart">
-              <select v-model="server" id="inputServer" class="form-control">
-                <option v-for="srv in servers" :key="srv.id" :value="srv.id">{{srv.name}}</option>
+              <select v-model="serverIdx" id="inputServer" class="form-control">
+                <option v-for="(srv, idx) in servers" :key="idx" :value="idx">{{srv.name}}</option>
               </select>
             </div>
           </li>
@@ -64,34 +64,73 @@
 <script>
 export default {
   name: 'UnifiedPay',
-  data () {
+  data() {
     return {
       title: '微信支付',
-      enable_input: true,
+      serverJsonUrl:
+        'http://clientversion.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$gameflag&path=public/serverlist/server.json',
+      enableInput: true,
       games: [{ id: 'dtry2', name: '神之路' }, { id: 'dhbt', name: '思仙' }],
       game: 'dtry2',
       account: '',
-      servers: [
-        { id: '1001', name: '天下无双' },
-        { id: '1002', name: '三生三世' }
-      ],
-      server: '',
-      roles: [
-        { id: '10001', name: '角色1号' },
-        { id: '10002', name: '角色2号' }
-      ],
-      role: '',
-      goods: [
-        { id: '1', name: '¥6' },
-        { id: '2', name: '¥30' },
-        { id: '3', name: '¥98' }
-      ],
-      good: ''
+      servers: [{ id: '0', name: '选择服务器' }],
+      game2servers: {},
+      serverIdx: 0,
+      roles: [{ id: '0', name: '选择角色' }],
+      role: '0',
+      goods: [{ id: '1', name: '¥6' }, { id: '2', name: '¥30' }, { id: '3', name: '¥98' }],
+      good: '1'
     }
   },
+
   methods: {
-    submit: function (event) {
-      console.log('---------submit', this.game, this.account, this.server, this.role, this.good)
+    submit: function(event) {
+      var server = this.servers[this.serverIdx].id
+      console.log('---------submit', this.game, this.account, server, this.role, this.good)
+    },
+
+    getserverlist: function(game) {
+      if (this.game2servers[game]) {
+        this.servers = this.game2servers[game]
+        console.log('读取服务器列表成功')
+        return
+      }
+      var url = this.serverJsonUrl.replace('$gameflag', game)
+      this.$http.get(url, { headers: { 'Content-Type': 'application/json' } }).then(
+        response => {
+          console.log(response)
+          var servers = []
+          for (var i = 0, len = response.data.serverlist.length; i < len; i++) {
+            var one = response.data.serverlist[i]
+            var srv = { id: one.serverid, name: one.showname ? one.showname : one.name }
+            servers.push(srv)
+          }
+          this.game2servers[game] = servers
+          this.servers = servers
+          console.log('请求服务器列表成功')
+        },
+
+        response => {
+          console.log('请求服务器列表失败', response)
+        }
+      )
+    },
+
+    getrolelist: function(game, account, serverid)
+    {
+      console.log("getroles", game, account, serverid)
+      var roles = [{id:16102, name:"Test16102"}, {id:16103, name:"Test16103"}]
+      this.roles = roles
+    }
+  },
+
+  mounted: function() {
+    this.getserverlist(this.game)
+  },
+
+  watch: {
+    game: function(val) {
+      this.getserverlist(val)
     }
   }
 }
