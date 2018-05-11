@@ -19,7 +19,13 @@
                 <label for="account">账号</label>
               </div>
               <div class="rightpart">
-                <input v-model.lazy="account" type="text" placeholder="点击输入账号">
+                <div class="input-group ">
+                  <input v-model.lazy="account" @keyup.enter="onaccount" type="text" class="form-control" placeholder="点击输入账号" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                  <div class="input-group-append">
+                    <span v-if="accountExist" class="input-group-text" id="basic-addon2">存在</span>
+                    <span v-else class="input-group-text" id="basic-addon3">不存在</span>
+                  </div>
+                </div>
               </div>
           </li>
           <li>
@@ -68,11 +74,12 @@ export default {
     return {
       title: '微信支付',
       serverJsonUrl:
-        'http://clientversion.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$gameflag&path=public/serverlist/server.json',
+        'http://clientversion1.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$gameflag&path=public/serverlist/server.json',
       enableInput: true,
       games: [{ id: 'dtry2', name: '神之路' }, { id: 'dhbt', name: '思仙' }],
       game: 'dtry2',
       account: '',
+      accountExist: false,
       servers: [{ id: '0', name: '选择服务器' }],
       game2servers: {},
       serverIdx: 0,
@@ -87,6 +94,7 @@ export default {
     submit: function(event) {
       var server = this.servers[this.serverIdx].id
       console.log('---------submit', this.game, this.account, server, this.role, this.good)
+      this.$router.push({ path: '/payresult?orderid=123456' })
     },
 
     getserverlist: function(game) {
@@ -116,11 +124,19 @@ export default {
       )
     },
 
-    getrolelist: function(game, account, serverid)
-    {
-      console.log("getroles", game, account, serverid)
-      var roles = [{id:16102, name:"Test16102"}, {id:16103, name:"Test16103"}]
+    getrolelist: function(game, account, serverid) {
+      console.log('getroles', game, account, serverid)
+      var roles = [{ id: 16102, name: 'Test16102' }, { id: 16103, name: 'Test16103' }]
       this.roles = roles
+      if (roles.length > 0) {
+        this.role = roles[0].id
+      }
+    },
+
+    onaccount: function() {
+      this.accountExist = this.account.length > 0
+      var server = this.servers[this.serverIdx].id
+      this.getrolelist(this.game, this.account, server)
     }
   },
 
@@ -131,6 +147,10 @@ export default {
   watch: {
     game: function(val) {
       this.getserverlist(val)
+    },
+    serverIdx: function(val) {
+      var server = this.servers[val].id
+      this.getrolelist(this.game, this.account, server)
     }
   }
 }
@@ -193,14 +213,6 @@ label {
   flex-grow: 1;
   width: 5rem;
 }
-
-/* input {
-  border: 0;
-  padding: 0.5rem 0;
-  text-indent: 0.5rem;
-  flex-grow: 4;
-  font-size: 0.9rem;
-} */
 
 a {
   color: #42b983;
