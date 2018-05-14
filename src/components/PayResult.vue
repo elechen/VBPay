@@ -43,7 +43,23 @@ export default {
     },
     checkpay: function() {
       console.log('检查订单是否完成')
-      this.msg = '支付完成，订单号：xxxxx'
+      var prepayid = localStorage.getItem('prepay_id')
+      var orderid = localStorage.getItem('orderid')
+      var url = 'http://pay.169youxi.com/pay/payquery'
+      this.msg = '正在查询订单'
+      this.$http.post(url, { prepay_id: prepayid, orderid: orderid }, { emulateJSON: true }).then(
+        response => {
+          var data = response.data
+          if (data['data']) {
+            this.msg = '支付成功'
+          } else {
+            this.msg = '支付失败'
+          }
+        },
+        response => {
+          alert(response)
+        }
+      )
     }
   },
   mounted: function() {

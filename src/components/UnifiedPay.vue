@@ -68,6 +68,8 @@
 </template>
 
 <script>
+import nativeToast from 'native-toast'
+
 export default {
   name: 'UnifiedPay',
   data() {
@@ -75,6 +77,8 @@ export default {
       title: '微信支付',
       serverJsonUrl:
         'http://clientversion1.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$gameflag&path=public/serverlist/server.json',
+      payUrl: 'http://pay.169youxi.com/pay/pay',
+      payResultUrl: 'http://pay.169youxi.com/pay/payresult',
       enableInput: true,
       games: [{ id: 'dtry2', name: '神之路' }, { id: 'dhbt', name: '思仙' }],
       game: 'dtry2',
@@ -85,16 +89,72 @@ export default {
       serverIdx: 0,
       roles: [{ id: '0', name: '选择角色' }],
       role: '0',
-      goods: [{ id: '1', name: '¥6' }, { id: '2', name: '¥30' }, { id: '3', name: '¥98' }],
-      good: '1'
+      goods: [
+        { id: '0', name: '¥0.01', title: '充值¥0.01', price: 0.01 },
+        { id: '1', name: '¥6', title: '充值¥6', price: 6 },
+        { id: '2', name: '¥30', title: '充值¥30', price: 30 },
+        { id: '3', name: '¥98', title: '充值¥98', price: 98 }
+      ],
+      good: '0'
     }
   },
 
   methods: {
     submit: function(event) {
       var server = this.servers[this.serverIdx].id
+      var message
+      if (this.game === '') {
+        message = '请选择游戏'
+      } else if (this.account === '') {
+        message = '请输入账号'
+      } else if (server === '') {
+        message = '请选择服务器'
+      } else if (this.role === '') {
+        message = '请选择角色'
+      } else if (this.good === '') {
+        message = '请选择商品'
+      }
+      if (message) {
+        console.log(message)
+        nativeToast({
+          message: message,
+          position: 'top',
+          timeout: 3000,
+          type: 'warning'
+        })
+        return
+      }
       console.log('---------submit', this.game, this.account, server, this.role, this.good)
-      this.$router.push({ path: '/payresult?orderid=123456' })
+      var goodData = this.goods[this.good]
+      var args = {
+        game: this.game,
+        account: this.account,
+        server: server,
+        role: this.role,
+        goods: this.good,
+        body: goodData.title,
+        subject: goodData.name,
+        total_fee: goodData.price
+      }
+      // console.log(args)
+      this.$http.post(this.payUrl, args, { emulateJSON: true }).then(
+        response => {
+          console.log('请求支付成功', response)
+          var rt = response.data
+          if (rt.code === 'SUCCESS') {
+            var data = rt.data
+            localStorage.setItem('prepay_id', data.prepay_id)
+            localStorage.setItem('orderid', data.orderid)
+            window.location.href = data.mweb_url + '&redirect_url=' + encodeURI(this.payResultUrl)
+          } else {
+            alert(rt.message + '\n' + rt.data)
+          }
+        },
+
+        response => {
+          console.log('请求支付失败', response)
+        }
+      )
     },
 
     getserverlist: function(game) {

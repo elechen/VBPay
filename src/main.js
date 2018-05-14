@@ -8,6 +8,7 @@ import 'jquery/dist/jquery.min.js'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.min'
 
+import 'native-toast/dist/native-toast.css'
 import VueResource from 'vue-resource'
 
 Vue.config.productionTip = false
