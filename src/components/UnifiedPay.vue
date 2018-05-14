@@ -132,7 +132,7 @@ export default {
         server: server,
         role: this.role,
         goods: this.good,
-        body: goodData.title,
+        body: goodData.name,
         subject: goodData.name,
         total_fee: goodData.price
       }
@@ -145,7 +145,10 @@ export default {
             var data = rt.data
             localStorage.setItem('prepay_id', data.prepay_id)
             localStorage.setItem('orderid', data.orderid)
-            window.location.href = data.mweb_url + '&redirect_url=' + encodeURI(this.payResultUrl)
+            window.location.href =
+              data.mweb_url +
+              '&redirect_url=' +
+              encodeURI(this.payResultUrl + '?prepay_id=' + data.prepay_id + '&orderid=' + data.orderid)
           } else {
             alert(rt.message + '\n' + rt.data)
           }
