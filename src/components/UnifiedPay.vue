@@ -1,68 +1,68 @@
 <template>
   <div>
     <h2>{{ title }}</h2>
-    <form>
-      <div>
+    <div>
+      <form action='' onsubmit='return false;'>
         <ol>
           <li>
-            <div class="leftpart">
-              <label for="game">游戏</label>
+            <div class='leftpart'>
+              <label for='game'>游戏</label>
             </div>
-            <div class="rightpart">
-                <select v-model="game" id="inputGame" class="form-control">
-                  <option v-for="game in games" :key="game.id" :value="game.id">{{game.name}}</option>
+            <div class='rightpart'>
+                <select v-model='game' id='inputGame' class='form-control'>
+                  <option v-for='game in games' :key='game.id' :value='game.id'>{{game.name}}</option>
                 </select>
             </div>
           </li>
           <li>
-              <div class="leftpart">
-                <label for="account">账号</label>
+              <div class='leftpart'>
+                <label for='account'>账号</label>
               </div>
-              <div class="rightpart">
-                <div class="input-group ">
-                  <input v-model.lazy="account" @keyup.enter="onaccount" type="text" class="form-control" placeholder="点击输入账号" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                  <div class="input-group-append">
-                    <span v-if="accountExist" class="input-group-text" id="basic-addon2">存在</span>
-                    <span v-else class="input-group-text" id="basic-addon3">不存在</span>
+              <div class='rightpart'>
+                <div class='input-group '>
+                  <input v-model.lazy='account' @keyup.enter='onaccount' value='搜索' type='search' class='form-control' placeholder='点击输入账号' aria-label="Recipient's username" aria-describedby='basic-addon2'>
+                  <div class='input-group-append'>
+                    <span v-if='accountExist' class='input-group-text' id='basic-addon2'>存在</span>
+                    <span v-else class='input-group-text' id='basic-addon3'>不存在</span>
                   </div>
                 </div>
               </div>
           </li>
           <li>
-            <div class="leftpart">
-              <label for="server">服务器</label>
+            <div class='leftpart'>
+              <label for='server'>服务器</label>
             </div>
-            <div class="rightpart">
-              <select v-model="serverIdx" id="inputServer" class="form-control">
-                <option v-for="(srv, idx) in servers" :key="idx" :value="idx">{{srv.name}}</option>
+            <div class='rightpart'>
+              <select v-model='serverIdx' id='inputServer' class='form-control'>
+                <option v-for='(srv, idx) in showServers' :key='idx' :value='idx'>{{srv.name}}</option>
               </select>
             </div>
           </li>
           <li>
-            <div class="leftpart">
-              <label for="role">角色</label>
+            <div class='leftpart'>
+              <label for='role'>角色</label>
             </div>
-            <div class="rightpart">
-              <select v-model="role" id="inputRole" class="form-control">
-                <option v-for="role in roles" :key="role.id" :value="role.id">{{role.name}}</option>
+            <div class='rightpart'>
+              <select v-model='role' id='inputRole' class='form-control'>
+                <option v-for='role in roles' :key='role.id' :value='role.id'>{{role.name}}</option>
               </select>
             </div>
           </li>
           <li>
-            <div class="leftpart">
-              <label for="price">金额</label>
+            <div class='leftpart'>
+              <label for='price'>金额</label>
             </div>
-            <div class="rightpart">
-              <select v-model="good" id="inputPrice" class="form-control">
-                <option v-for="good in goods" :key="good.id" :value="good.id">{{good.name}}</option>
+            <div class='rightpart'>
+              <select v-model='good' id='inputPrice' class='form-control'>
+                <option v-for='good in goods' :key='good.id' :value='good.id'>{{good.name}}</option>
               </select>
             </div>
           </li>
         </ol>
-      </div>
-    </form>
-    <div class="bottom-center">
-      <button type="button" class="btn btn-primary btn-block" @click="submit">立刻支付</button>
+      </form>
+    </div>
+    <div class='bottom-center'>
+      <button type='button' class='btn btn-primary btn-block' @click='submit'>立刻支付</button>
     </div>
   </div>
 </template>
@@ -76,18 +76,21 @@ export default {
     return {
       title: '微信支付',
       serverJsonUrl:
-        'http://clientversion1.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$gameflag&path=public/serverlist/server.json',
+        'http://clientversion1.169youxi.cn:8002/?action=getupdate&passport=3cb6558ed8b99ad5bd74f5ef29ec4b51&product=$GAMEFLAG&path=public/serverlist/server.json',
       payUrl: 'http://pay.169youxi.com/pay/pay',
       payResultUrl: 'http://pay.169youxi.com/pay/payresult',
+      accountQueryUrl: 'http://datatcenter.169youxi.cn:7006/?action=sfquery&gameflag=$GAMEFLAG&account=$ACCOUNT',
       enableInput: true,
       games: [{ id: 'dtry2', name: '神之路' }, { id: 'dhbt', name: '思仙' }],
       game: 'dtry2',
       account: '',
       accountExist: false,
-      servers: [{ id: '0', name: '选择服务器' }],
-      game2servers: {},
+      servers: [],
+      showServers: [{ id: '0', name: '选择服务器' }],
       serverIdx: 0,
+      game2servers: {},
       roles: [{ id: '0', name: '选择角色' }],
+      account2roles: {},
       role: '0',
       goods: [
         { id: '0', name: '¥0.01', title: '充值¥0.01', price: 0.01 },
@@ -101,15 +104,15 @@ export default {
 
   methods: {
     submit: function(event) {
-      var server = this.servers[this.serverIdx].id
+      var server = this.showServers[this.serverIdx].id
       var message
       if (this.game === '') {
         message = '请选择游戏'
       } else if (this.account === '') {
         message = '请输入账号'
-      } else if (server === '') {
+      } else if (server === '0') {
         message = '请选择服务器'
-      } else if (this.role === '') {
+      } else if (this.role === '0') {
         message = '请选择角色'
       } else if (this.good === '') {
         message = '请选择商品'
@@ -125,6 +128,9 @@ export default {
         return
       }
       console.log('---------submit', this.game, this.account, server, this.role, this.good)
+      if (this.game) {
+        return
+      }
       var goodData = this.goods[this.good]
       var args = {
         game: this.game,
@@ -143,12 +149,11 @@ export default {
           var rt = response.data
           if (rt.code === 'SUCCESS') {
             var data = rt.data
-            localStorage.setItem('prepay_id', data.prepay_id)
-            localStorage.setItem('orderid', data.orderid)
-            window.location.href =
-              data.mweb_url +
-              '&redirect_url=' +
-              encodeURI(this.payResultUrl + '?prepay_id=' + data.prepay_id + '&orderid=' + data.orderid)
+            args.orderid = data.orderid
+            var redirectUrl = encodeURI(this.payResultUrl + '?orderid=' + data.orderid)
+            args.redirectUrl = redirectUrl
+            localStorage.setItem('order', JSON.stringify(args))
+            window.location.href = data.mweb_url + '&redirect_url=' + redirectUrl
           } else {
             alert(rt.message + '\n' + rt.data)
           }
@@ -160,13 +165,13 @@ export default {
       )
     },
 
-    getserverlist: function(game) {
+    getServerList: function(game) {
       if (this.game2servers[game]) {
         this.servers = this.game2servers[game]
         console.log('读取服务器列表成功')
         return
       }
-      var url = this.serverJsonUrl.replace('$gameflag', game)
+      var url = this.serverJsonUrl.replace('$GAMEFLAG', game)
       this.$http.get(url, { headers: { 'Content-Type': 'application/json' } }).then(
         response => {
           console.log(response)
@@ -187,33 +192,111 @@ export default {
       )
     },
 
-    getrolelist: function(game, account, serverid) {
+    // 考虑合服情况
+    getServersByID: function(serverid) {
+      var servers = []
+      for (var i = 0; i < this.servers.length; i++) {
+        var server = this.servers[i]
+        if (server.id === serverid) {
+          servers.push(server)
+        }
+      }
+      return servers
+    },
+
+    resetShowServers: function() {
+      this.showServers = [{ id: '0', name: '选择服务器' }]
+      this.serverIdx = 0
+      this.accountExist = false
+      this.roles = [{ id: '0', name: '选择角色' }]
+      this.role = '0'
+    },
+
+    getRoleList: function(game, account, serverid) {
       console.log('getroles', game, account, serverid)
-      var roles = [{ id: 16102, name: 'Test16102' }, { id: 16103, name: 'Test16103' }]
-      this.roles = roles
-      if (roles.length > 0) {
-        this.role = roles[0].id
+      var roles = this.account2roles[account]
+      var showRoles = []
+      for (var i = 0; i < roles.length; i++) {
+        var role = roles[i]
+        if (role.server === serverid) {
+          role.id = role.pid
+          showRoles.push(role)
+        }
+      }
+      this.roles = showRoles
+      if (showRoles.length > 0) {
+        this.role = showRoles[0].id
       }
     },
 
     onaccount: function() {
-      this.accountExist = this.account.length > 0
-      var server = this.servers[this.serverIdx].id
-      this.getrolelist(this.game, this.account, server)
+      if (this.account.length === 0) {
+        nativeToast({
+          message: '请先输入账号',
+          position: 'top',
+          timeout: 1000,
+          type: 'warning'
+        })
+        return
+      }
+      var url = this.accountQueryUrl.replace('$GAMEFLAG', this.game)
+      url = url.replace('$ACCOUNT', this.account)
+      this.$http.get(url, { headers: { 'Content-Type': 'application/json' } }).then(
+        response => {
+          console.log(response)
+          var data = response.data
+          // SUCCESS{code:0,data=[{server:srvid,name:xxxx,pid:10003}]}  FAIL{code:1, msg:xxxx}
+          if (data.code === 0) {
+            var roles = data.data
+            var showServers = {}
+            for (var i = 0; i < roles.length; i++) {
+              var role = roles[i]
+              var servers = this.getServersByID(role.server)
+              showServers.push.apply(showServers, servers)
+            }
+            this.showServers = showServers
+            this.serverIdx = 0
+            this.accountExist = true
+            this.account2roles[this.account] = roles
+            var server = this.showServers[this.serverIdx].id
+            this.getRoleList(this.game, this.account, server)
+          } else {
+            this.resetShowServers()
+            nativeToast({
+              message: data.msg,
+              position: 'top',
+              timeout: 1000,
+              type: 'warning'
+            })
+          }
+          console.log('搜索账号成功')
+        },
+
+        response => {
+          this.resetShowServers()
+          nativeToast({
+            message: '请稍后搜索',
+            position: 'top',
+            timeout: 1000,
+            type: 'warning'
+          })
+          console.log('搜索账号失败', response)
+        }
+      )
     }
   },
 
   mounted: function() {
-    this.getserverlist(this.game)
+    this.getServerList(this.game)
   },
 
   watch: {
     game: function(val) {
-      this.getserverlist(val)
+      this.getServerList(val)
     },
     serverIdx: function(val) {
-      var server = this.servers[val].id
-      this.getrolelist(this.game, this.account, server)
+      var server = this.showServers[val].id
+      this.getRoleList(this.game, this.account, server)
     }
   }
 }
@@ -225,6 +308,7 @@ h1,
 h2 {
   font-weight: normal;
   padding-top: 10%;
+  margin-bottom: 10%;
 }
 ul {
   list-style-type: none;
