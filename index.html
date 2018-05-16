@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>微信支付</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>微信支付</title>
+  <% for(var k in htmlWebpackPlugin.files.css){ %>
+    <link rel=stylesheet type="text/css" href="<?php echo RESOURCE_PATH.'/views/pay'.'<%= htmlWebpackPlugin.files.css[k] %>' ;?>">
+  <% } %>
+</head>
+
+<body>
+  <div id="app"></div>
+  <% for(var k in htmlWebpackPlugin.files.js){ %>
+    <script type="text/javascript" src="<?php echo RESOURCE_PATH.'/views/pay'.'<%= htmlWebpackPlugin.files.js[k] %>' ;?>"></script>
+  <% } %>
+</body>
 </html>
